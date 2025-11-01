@@ -1,0 +1,24 @@
+name: Atualizar Lotofácil
+on:
+  schedule:
+    - cron: '0 9 * * *' # todo dia às 6h (horário de Brasília)
+  workflow_dispatch:
+
+jobs:
+  atualizar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Baixar JSON da Caixa
+        run: |
+          curl -s "https://servicebus2.caixa.gov.br/portaldeloterias/api/resultados?modalidade=lotofacil" | jq '.' > lotofacil.json
+
+      - name: Commit e push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add lotofacil.json
+          git commit -m "Atualização automática $(date +'%d/%m/%Y %H:%M')" || echo "Sem mudanças"
+          git push
